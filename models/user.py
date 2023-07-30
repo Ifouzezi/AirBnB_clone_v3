@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ holds class User"""
 import hashlib
 import models
@@ -37,11 +36,11 @@ class User(BaseModel, Base):
         """initializes user"""
         super().__init__(*args, **kwargs)
 
-    def __setattr__(self, __name: str, __value) -> None:
+    def __setattr__(self, name: str, value) -> None:
         '''Sets an attribute of this class to a given value.'''
-        if __name == 'password':
-            if type(__value) is str:
-                m = hashlib.md5(bytes(__value, 'utf-8'))
-                super().__setattr__(__name, m.hexdigest())
+        if name == 'password':
+            if type(value) is str:
+                m = hashlib.md5(bytes(value, 'utf-8'))
+                super().__setattr__(name, m.hexdigest())
         else:
-            super().__setattr__(__name, __value)
+            super().__setattr__(name, value)
