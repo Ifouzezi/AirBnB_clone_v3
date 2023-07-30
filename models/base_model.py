@@ -2,6 +2,9 @@
 """
 Contains class BaseModel
 """
+"""
+Contains class BaseModel
+"""
 import inspect
 from datetime import datetime
 import models
@@ -11,7 +14,7 @@ from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
 
-time = "%Y-%m-%dT%H:%M:%S.%f"
+time_format = "%Y-%m-%dT%H:%M:%S.%f"
 
 if models.storage_t == "db":
     Base = declarative_base()
@@ -33,11 +36,11 @@ class BaseModel:
                 if key != "__class__":
                     setattr(self, key, value)
             if kwargs.get("created_at", None) and type(self.created_at) is str:
-                self.created_at = datetime.strptime(kwargs["created_at"], time)
+                self.created_at = datetime.strptime(kwargs["created_at"], time_format)
             else:
                 self.created_at = datetime.utcnow()
             if kwargs.get("updated_at", None) and type(self.updated_at) is str:
-                self.updated_at = datetime.strptime(kwargs["updated_at"], time)
+                self.updated_at = datetime.strptime(kwargs["updated_at"], time_format)
             else:
                 self.updated_at = datetime.utcnow()
             if kwargs.get("id", None) is None:
@@ -62,9 +65,9 @@ class BaseModel:
         """returns a dictionary containing all keys/values of the instance"""
         new_dict = self.__dict__.copy()
         if "created_at" in new_dict:
-            new_dict["created_at"] = new_dict["created_at"].strftime(time)
+            new_dict["created_at"] = new_dict["created_at"].strftime(time_format)
         if "updated_at" in new_dict:
-            new_dict["updated_at"] = new_dict["updated_at"].strftime(time)
+            new_dict["updated_at"] = new_dict["updated_at"].strftime(time_format)
         new_dict["__class__"] = self.__class__.__name__
         if "_sa_instance_state" in new_dict:
             del new_dict["_sa_instance_state"]
