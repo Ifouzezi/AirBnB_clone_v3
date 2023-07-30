@@ -7,61 +7,61 @@ from models.state import State
 
 
 @app_views.route('/states', methods=['GET'], strict_slashes=False)
-def state():
+def get_states():
     """Retrieves the list of all State objects"""
-    objs = storage.all(State)
-    return jsonify([obj.to_dict() for obj in objs.values()])
+    state_objs = storage.all(State)
+    return jsonify([state_obj.to_dict() for state_obj in state_objs.values()])
 
 
 @app_views.route('/states/<state_id>', methods=['GET'], strict_slashes=False)
-def single_state(state_id):
+def get_single_state(state_id):
     """Retrieves a State object"""
-    obj = storage.get(State, state_id)
-    if not obj:
+    state_obj = storage.get(State, state_id)
+    if not state_obj:
         abort(404)
-    return jsonify(obj.to_dict())
+    return jsonify(state_obj.to_dict())
 
 
 @app_views.route('/states/<state_id>',
                  methods=['DELETE'], strict_slashes=False)
-def del_state(state_id):
+def delete_state(state_id):
     """Deletes a State object"""
-    obj = storage.get(State, state_id)
-    if not obj:
+    state_obj = storage.get(State, state_id)
+    if not state_obj:
         abort(404)
-    obj.delete()
+    state_obj.delete()
     storage.save()
     return make_response(jsonify({}), 200)
 
 
 @app_views.route('/states', methods=['POST'], strict_slashes=False)
-def post_state():
+def create_state():
     """Returns the new State with the status code 201"""
-    new_obj = request.get_json()
-    if not new_obj:
+    new_state_data = request.get_json()
+    if not new_state_data:
         abort(400, "Not a JSON")
-    if 'name' not in new_obj:
+    if 'name' not in new_state_data:
         abort(400, "Missing name")
-    obj = State(**new_obj)
-    storage.new(obj)
+    state_obj = State(**new_state_data)
+    storage.new(state_obj)
     storage.save()
-    return make_response(jsonify(obj.to_dict()), 201)
+    return make_response(jsonify(state_obj.to_dict()), 201)
 
 
 @app_views.route('/states/<state_id>', methods=['PUT'], strict_slashes=False)
-def put_state(state_id):
-    """ Updates a State object """
-    obj = storage.get(State, state_id)
-    if not obj:
+def update_state(state_id):
+    """Updates a State object"""
+    state_obj = storage.get(State, state_id)
+    if not state_obj:
         abort(404)
 
-    req = request.get_json()
-    if not req:
+    req_data = request.get_json()
+    if not req_data:
         abort(400, "Not a JSON")
 
-    for k, v in req.items():
-        if k not in ['id', 'created_at', 'updated_at']:
-            setattr(obj, k, v)
+    for key, value in req_data.items():
+        if key not in ['id', 'created_at', 'updated_at']:
+            setattr(state_obj, key, value)
 
     storage.save()
-    return make_response(jsonify(obj.to_dict()), 200)
+    return make_response(jsonify(state_obj.to_dict()), 200)
