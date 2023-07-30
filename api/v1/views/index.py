@@ -12,8 +12,8 @@ def status():
 
 
 @app_views.route('/stats', methods=['GET'], strict_slashes=False)
-def stat():
-    """returns the number of each objects by type"""
+def stats():
+    """returns the number of each object by type"""
     return jsonify(
         amenities=storage.count('Amenity'),
         cities=storage.count('City'),
