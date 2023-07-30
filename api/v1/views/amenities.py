@@ -13,20 +13,18 @@ def get_amenities():
     return jsonify([amenity_obj.to_dict() for amenity_obj in amenity_objs.values()])
 
 
-@app_views.route('/amenities/<amenity_id>',
-                 methods=['GET'], strict_slashes=False)
+@app_views.route('/amenities/<amenity_id>', methods=['GET'], strict_slashes=False)
 def get_single_amenity(amenity_id):
-    """Retrieves an Amenity object"""
+    """Retrieves a Amenity object"""
     amenity_obj = storage.get(Amenity, amenity_id)
     if not amenity_obj:
         abort(404)
     return jsonify(amenity_obj.to_dict())
 
 
-@app_views.route('/amenities/<amenity_id>',
-                 methods=['DELETE'], strict_slashes=False)
+@app_views.route('/amenities/<amenity_id>', methods=['DELETE'], strict_slashes=False)
 def delete_amenity(amenity_id):
-    """Returns an empty dictionary with the status code 200"""
+    """Deletes a Amenity object"""
     amenity_obj = storage.get(Amenity, amenity_id)
     if not amenity_obj:
         abort(404)
@@ -38,7 +36,7 @@ def delete_amenity(amenity_id):
 
 @app_views.route('/amenities', methods=['POST'], strict_slashes=False)
 def create_amenity():
-    """Returns the new Amenity with the status code 201"""
+    """Creates a new Amenity"""
     new_amenity_data = request.get_json()
     if not new_amenity_data:
         abort(400, "Not a JSON")
@@ -51,10 +49,9 @@ def create_amenity():
     return make_response(jsonify(amenity_obj.to_dict()), 201)
 
 
-@app_views.route('/amenities/<amenity_id>',
-                 methods=['PUT'], strict_slashes=False)
+@app_views.route('/amenities/<amenity_id>', methods=['PUT'], strict_slashes=False)
 def update_amenity(amenity_id):
-    """Returns the Amenity object with the status code 200"""
+    """Updates a Amenity object"""
     amenity_obj = storage.get(Amenity, amenity_id)
     if not amenity_obj:
         abort(404)
@@ -63,8 +60,9 @@ def update_amenity(amenity_id):
     if not req_data:
         abort(400, "Not a JSON")
 
+    ignore_keys = ['id', 'created_at', 'updated_at']
     for key, value in req_data.items():
-        if key not in ['id', 'created_at', 'updated_at']:
+        if key not in ignore_keys:
             setattr(amenity_obj, key, value)
 
     storage.save()
