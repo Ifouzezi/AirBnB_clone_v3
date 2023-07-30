@@ -1,69 +1,69 @@
 #!/usr/bin/python3
-'''Contains the amenities view for the API.'''
-from flask import abort, jsonify, make_response, request
+"""amenities.py"""
+
 from api.v1.views import app_views
+from flask import abort, jsonify, make_response, request
 from models import storage
 from models.amenity import Amenity
 
 
 @app_views.route('/amenities', methods=['GET'], strict_slashes=False)
 def get_amenities():
-    """Retrieves the list of all Amenity objects"""
-    amenity_objs = storage.all(Amenity)
-    return jsonify([amenity_obj.to_dict() for amenity_obj in amenity_objs.values()])
+    """Get amenity information for all amenities"""
+    amenities_list = []
+    for amenity in storage.all("Amenity").values():
+        amenities_list.append(amenity.to_dict())
+    return jsonify(amenities_list)
 
 
-@app_views.route('/amenities/<amenity_id>', methods=['GET'], strict_slashes=False)
-def get_single_amenity(amenity_id):
-    """Retrieves a Amenity object"""
-    amenity_obj = storage.get(Amenity, amenity_id)
-    if not amenity_obj:
+@app_views.route('/amenities/<string:amenity_id>', methods=['GET'],
+                 strict_slashes=False)
+def get_amenity(amenity_id):
+    """Get amenity information for a specified amenity"""
+    amenity = storage.get("Amenity", amenity_id)
+    if amenity is None:
         abort(404)
-    return jsonify(amenity_obj.to_dict())
+    return jsonify(amenity.to_dict())
 
 
-@app_views.route('/amenities/<amenity_id>', methods=['DELETE'], strict_slashes=False)
+@app_views.route('/amenities/<string:amenity_id>', methods=['DELETE'],
+                 strict_slashes=False)
 def delete_amenity(amenity_id):
-    """Deletes a Amenity object"""
-    amenity_obj = storage.get(Amenity, amenity_id)
-    if not amenity_obj:
+    """Deletes an amenity based on its amenity_id"""
+    amenity = storage.get("Amenity", amenity_id)
+    if amenity is None:
         abort(404)
-
-    amenity_obj.delete()
+    amenity.delete()
     storage.save()
-    return make_response(jsonify({}), 200)
+    return jsonify({})
 
 
 @app_views.route('/amenities', methods=['POST'], strict_slashes=False)
-def create_amenity():
-    """Creates a new Amenity"""
-    new_amenity_data = request.get_json()
-    if not new_amenity_data:
-        abort(400, "Not a JSON")
-    if 'name' not in new_amenity_data:
-        abort(400, "Missing name")
-
-    amenity_obj = Amenity(**new_amenity_data)
-    storage.new(amenity_obj)
-    storage.save()
-    return make_response(jsonify(amenity_obj.to_dict()), 201)
-
-
-@app_views.route('/amenities/<amenity_id>', methods=['PUT'], strict_slashes=False)
-def update_amenity(amenity_id):
-    """Updates a Amenity object"""
-    amenity_obj = storage.get(Amenity, amenity_id)
-    if not amenity_obj:
-        abort(404)
-
+def post_amenity():
+    """Create a new amenity"""
+    if not request.get_json():
+        return make_response(jsonify({'error': 'Not a JSON'}), 400)
     req_data = request.get_json()
-    if not req_data:
-        abort(400, "Not a JSON")
+    if 'name' not in req_data:
+        return make_response(jsonify({'error': 'Missing name'}), 400)
+    amenity = Amenity(**req_data)
+    amenity.save()
+    return make_response(jsonify(amenity.to_dict()), 201)
 
+
+@app_views.route('/amenities/<string:amenity_id>', methods=['PUT'],
+                 strict_slashes=False)
+def put_amenity(amenity_id):
+    """Update an amenity"""
+    amenity = storage.get("Amenity", amenity_id)
+    if amenity is None:
+        abort(404)
+    if not request.get_json():
+        return make_response(jsonify({'error': 'Not a JSON'}), 400)
+    req_data = request.get_json()
     ignore_keys = ['id', 'created_at', 'updated_at']
-    for key, value in req_data.items():
-        if key not in ignore_keys:
-            setattr(amenity_obj, key, value)
-
-    storage.save()
-    return make_response(jsonify(amenity_obj.to_dict()), 200)
+    for attr, val in req_data.items():
+        if attr not in ignore_keys:
+            setattr(amenity, attr, val)
+    amenity.save()
+    return jsonify(amenity.to_dict())
